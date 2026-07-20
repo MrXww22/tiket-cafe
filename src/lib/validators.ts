@@ -49,6 +49,26 @@ export const orderCreateSchema = z.object({
     .min(1),
 });
 
+export const deliveryOrderCreateSchema = z.object({
+  customerName: z.string().trim().min(2),
+  customerPhone: z.string().trim().min(5).max(32),
+  deliveryAddress: z.string().trim().min(5),
+  deliveryEntrance: z.string().trim().max(20).optional().default(""),
+  deliveryFloor: z.string().trim().max(20).optional().default(""),
+  deliveryApartment: z.string().trim().max(20).optional().default(""),
+  deliveryLat: z.coerce.number().optional(),
+  deliveryLng: z.coerce.number().optional(),
+  comment: z.string().trim().optional().default(""),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().min(1),
+        quantity: z.coerce.number().int().positive(),
+      }),
+    )
+    .min(1),
+});
+
 export const itemStatusSchema = z.object({
   status: z.enum(["NEW", "COOKING", "READY"]),
 });

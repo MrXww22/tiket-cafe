@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { formatReadyOrderMessage } from "@/lib/orders";
 import { prisma } from "@/lib/prisma";
-import { formatReadyMessage } from "@/lib/orders";
 import { notifyWaiters } from "@/lib/telegram";
 import { itemStatusSchema } from "@/lib/validators";
 import { createWaiterNotificationForTable } from "@/lib/waiter-notifications";
@@ -29,18 +29,23 @@ export async function PATCH(request: Request, { params }: Params) {
   if (payload.status === "COOKING" && item.order.status === "NEW") {
     await prisma.order.update({
       where: { id: item.orderId },
-      data: { status: "IN_PROGRESS" },
+      data: {
+        status: "IN_PROGRESS",
+        ...(item.order.orderType === "DELIVERY" ? { deliveryStatus: "CONFIRMED" } : {}),
+      },
     });
   }
 
   if (payload.status === "READY") {
-    const message = formatReadyMessage(item.order.table.number, [`${item.product.name} x${item.quantity}`]);
-    await createWaiterNotificationForTable({
-      type: "ORDER_READY",
-      tableNumber: item.order.table.number,
-      title: "Заказ готов",
-      message,
-    });
+    const message = formatReadyOrderMessage(item.order, [`${item.product.name} x${item.quantity}`]);
+    if (item.order.table?.number) {
+      await createWaiterNotificationForTable({
+        type: "ORDER_READY",
+        tableNumber: item.order.table.number,
+        title: "Заказ готов",
+        message,
+      });
+    }
     await notifyWaiters(message);
 
     const freshItems = await prisma.orderItem.findMany({
@@ -49,7 +54,10 @@ export async function PATCH(request: Request, { params }: Params) {
     if (freshItems.every((candidate) => candidate.status === "READY")) {
       await prisma.order.update({
         where: { id: item.orderId },
-        data: { status: "READY" },
+        data: {
+          status: "READY",
+          ...(item.order.orderType === "DELIVERY" ? { deliveryStatus: "READY_FOR_PICKUP" } : {}),
+        },
       });
     }
   }

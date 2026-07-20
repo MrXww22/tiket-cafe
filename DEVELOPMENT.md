@@ -134,6 +134,8 @@ televizor1996sam.fvds.ru
 cd /var/www/cafe-menu
 git pull origin main
 npm install
+npm run db:push
+npm run db:generate
 npm run build
 pm2 restart cafe-menu
 ```
@@ -146,6 +148,26 @@ pm2 start npm --name cafe-menu -- start
 pm2 save
 ```
 
+## Доставка
+
+Публичная страница заказа доставки:
+
+```text
+/delivery
+```
+
+Для доставки добавлены поля клиента, телефона WhatsApp, адреса, деталей подъезда/этажа/квартиры и координат. Новый заказ доставки отправляет уведомление в Telegram и готовит сообщение клиенту в WhatsApp.
+
+Переменные для сервера:
+
+```env
+TELEGRAM_DELIVERY_CHAT_ID="-100..."
+WHATSAPP_API_URL="https://graph.facebook.com/vXX.X/PHONE_NUMBER_ID/messages"
+WHATSAPP_TOKEN="..."
+```
+
+Если `TELEGRAM_DELIVERY_CHAT_ID` не задан, доставка уйдет в обычную Telegram-группу официантов. Если WhatsApp-переменные не заданы, приложение не упадет, но автоматическая отправка в WhatsApp будет пропущена и ссылка появится в логах/Telegram.
+
 ## Рабочее правило команды
 
 `main` должна быть стабильной веткой. Разработчики не пушат напрямую в `main`, а делают свои ветки и Pull Request.
@@ -155,4 +177,3 @@ pm2 save
 ```text
 feature/... -> Pull Request -> main -> VPS
 ```
-

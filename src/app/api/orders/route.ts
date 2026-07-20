@@ -14,7 +14,7 @@ export async function GET() {
     where:
       user?.role === "WAITER"
         ? {
-            table: { waiterId: user.id },
+            OR: [{ orderType: "DELIVERY" }, { table: { waiterId: user.id } }],
           }
         : undefined,
     include: {
@@ -104,14 +104,14 @@ export async function POST(request: Request) {
   await Promise.all(
     departments.map((department) => {
       const departmentItems = order.items.filter((item) => item.product.department === department);
-      const message = `Новый заказ #${order.number}, столик ${order.table.number}: ${departmentItems
+      const message = `Новый заказ #${order.number}, столик ${order.table?.number || "..."}: ${departmentItems
         .map((item) => `${item.product.name} x${item.quantity}`)
         .join(", ")}`;
 
       return createDepartmentNotification({
         department,
         orderId: order.id,
-        tableNumber: order.table.number,
+        tableNumber: order.table?.number || 0,
         title: "Новый заказ",
         message,
       });

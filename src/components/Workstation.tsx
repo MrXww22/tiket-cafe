@@ -3,6 +3,7 @@
 import { BellRing, Check, Clock3, Flame, History, RefreshCcw, RotateCcw, Volume2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatMoney } from "@/lib/money";
+import { getOrderPlaceLabel } from "@/lib/orders";
 import type { Department, DepartmentNotification, ItemStatus, Order } from "@/types/app";
 
 type Tab = "active" | "history";
@@ -184,7 +185,7 @@ export function Workstation({ department }: { department: Department }) {
                     <BellRing size={20} /> {notification.title}
                   </p>
                   <p className="mt-1 font-bold text-zinc-900">{notification.message}</p>
-                  <p className="mt-1 text-xs text-zinc-500">Столик {notification.tableNumber}</p>
+                  <p className="mt-1 text-xs text-zinc-500">{notification.tableNumber ? `Столик ${notification.tableNumber}` : "Доставка"}</p>
                 </div>
                 <button className="btn btn-secondary px-3" onClick={() => dismissNotification(notification)} aria-label="Закрыть уведомление">
                   <X size={18} />
@@ -227,13 +228,14 @@ export function Workstation({ department }: { department: Department }) {
           <article key={order.id} className="rounded-lg border border-zinc-200 bg-white p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
-                <p className="text-lg font-black">Столик {order.table.number}</p>
+                <p className="text-lg font-black">{getOrderPlaceLabel(order)}</p>
                 <p className="text-sm text-zinc-600">
                   Заказ #{order.number} · {order.status}
                 </p>
+                {order.orderType === "DELIVERY" ? <p className="text-sm font-bold text-teal-800">{order.deliveryAddress}</p> : null}
               </div>
-              {tab === "active" ? (
-                <button className="btn btn-secondary text-sm" onClick={() => callWaiter(order.table.number)}>
+              {tab === "active" && order.table?.number ? (
+                <button className="btn btn-secondary text-sm" onClick={() => callWaiter(order.table!.number)}>
                   <BellRing size={18} /> Официант
                 </button>
               ) : null}

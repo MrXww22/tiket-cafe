@@ -82,7 +82,7 @@ export async function GET(request: Request) {
     const items = order.items.map((item) => `${item.product.name} x${item.quantity}`).join("; ");
     return [
       order.number,
-      order.table.number,
+      order.orderType === "DELIVERY" ? `Доставка: ${order.deliveryAddress}` : order.table?.number || "",
       order.status,
       order.createdAt.toISOString(),
       order.closedAt?.toISOString() || "",

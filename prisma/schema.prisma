@@ -27,6 +27,20 @@ enum OrderStatus {
   CANCELED
 }
 
+enum OrderType {
+  DINE_IN
+  DELIVERY
+}
+
+enum DeliveryStatus {
+  NEW
+  CONFIRMED
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELED
+}
+
 enum ItemStatus {
   NEW
   COOKING
@@ -109,19 +123,31 @@ model Product {
 model Order {
   id        String       @id @default(cuid())
   number    Int          @unique @default(autoincrement())
+  orderType OrderType    @default(DINE_IN)
   comment   String       @default("")
   status    OrderStatus  @default(NEW)
+  deliveryStatus DeliveryStatus?
   totalAmount Int        @default(0)
   paymentMethod PaymentMethod?
   waiterPercent Float     @default(0)
   waiterAmount  Int       @default(0)
-  tableId   String
+  tableId   String?
+  customerName String     @default("")
+  customerPhone String    @default("")
+  deliveryAddress String  @default("")
+  deliveryEntrance String @default("")
+  deliveryFloor String    @default("")
+  deliveryApartment String @default("")
+  deliveryLat Float?
+  deliveryLng Float?
+  driverName String       @default("")
+  driverPhone String      @default("")
   shiftId   String?
   closedAt  DateTime?
   closedById String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
-  table     DiningTable  @relation(fields: [tableId], references: [id])
+  table     DiningTable? @relation(fields: [tableId], references: [id])
   shift     WorkShift?   @relation(fields: [shiftId], references: [id], onDelete: SetNull)
   closedBy  StaffUser?   @relation("ClosedByWaiter", fields: [closedById], references: [id], onDelete: SetNull)
   items     OrderItem[]
@@ -190,10 +216,10 @@ model CustomerReview {
   rating    Int
   comment   String      @default("")
   orderId   String      @unique
-  tableId   String
+  tableId   String?
   waiterId  String?
   createdAt DateTime    @default(now())
   order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  table     DiningTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  table     DiningTable? @relation(fields: [tableId], references: [id], onDelete: Cascade)
   waiter    StaffUser?  @relation(fields: [waiterId], references: [id], onDelete: SetNull)
 }

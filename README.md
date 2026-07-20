@@ -36,6 +36,7 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cafe_menu?schema=pub
 NEXT_PUBLIC_APP_URL="https://your-domain.ru"
 TELEGRAM_BOT_TOKEN="токен_бота"
 TELEGRAM_WAITER_CHAT_ID="-100id_группы"
+TELEGRAM_DELIVERY_CHAT_ID="-100id_группы_доставки"
 ```
 
 Если переменные пустые, уведомления не отправляются в Telegram, а пишутся в консоль сервера.
@@ -46,6 +47,7 @@ TELEGRAM_WAITER_CHAT_ID="-100id_группы"
 
 - `/admin` - товары, категории, стоп-лист, столики.
 - `/menu/1` - QR-меню для столика 1. Для каждого столика используется свой номер: `/menu/2`, `/menu/3` и так далее.
+- `/delivery` - публичная страница заказа доставки.
 - `/api/qr/table/1` - PNG QR-код для столика 1.
 - `/kitchen` - панель кухни.
 - `/bar` - панель бара.

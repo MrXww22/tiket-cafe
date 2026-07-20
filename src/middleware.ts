@@ -44,6 +44,7 @@ const isPublicApi = (request: NextRequest) => {
   if (pathname === "/api/categories" && method === "GET") return true;
   if (pathname === "/api/products" && method === "GET") return true;
   if (pathname === "/api/orders" && method === "POST") return true;
+  if (pathname === "/api/delivery/orders" && method === "POST") return true;
   if (pathname.startsWith("/api/orders/table/") && method === "GET") return true;
   if (pathname === "/api/reviews" && method === "POST") return true;
   if (pathname === "/api/waiter-call" && method === "POST") return true;
@@ -114,5 +115,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|uploads|menu).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|uploads|menu|delivery).*)"],
 };

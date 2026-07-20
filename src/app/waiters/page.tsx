@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { formatMoney } from "@/lib/money";
+import { getOrderPlaceLabel } from "@/lib/orders";
 import type { DiningTable, Order, PaymentMethod, TableStatus, WaiterNotification } from "@/types/app";
 
 type Tab = "tables" | "orders";
@@ -196,7 +197,7 @@ function WaiterWorkspace() {
                     <BellRing size={20} /> {notification.title}
                   </p>
                   <p className="mt-1 font-bold text-zinc-900">{notification.message}</p>
-                  <p className="mt-1 text-xs text-zinc-500">Столик {notification.tableNumber}</p>
+                  <p className="mt-1 text-xs text-zinc-500">{notification.tableNumber ? `Столик ${notification.tableNumber}` : "Доставка"}</p>
                 </div>
                 <button className="btn btn-secondary px-3" onClick={() => dismissNotification(notification)} aria-label="Закрыть уведомление">
                   <X size={18} />
@@ -311,10 +312,11 @@ function WaiterWorkspace() {
                 <article key={order.id} className="rounded-lg border border-zinc-200 bg-white p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-lg font-black">Столик {order.table.number}</p>
+                      <p className="text-lg font-black">{getOrderPlaceLabel(order)}</p>
                       <p className="text-sm text-zinc-600">
                         Заказ #{order.number} · {order.status}
                       </p>
+                      {order.orderType === "DELIVERY" ? <p className="text-sm font-bold text-teal-800">{order.deliveryAddress}</p> : null}
                     </div>
                     <span className="chip">{formatMoney(orderTotal(order))}</span>
                   </div>

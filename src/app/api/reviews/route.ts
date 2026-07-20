@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     },
   });
 
-  if (!order || order.status !== "SERVED") {
+  if (!order || order.status !== "SERVED" || !order.table) {
     return NextResponse.json({ message: "Отзыв можно оставить только после закрытия заказа" }, { status: 400 });
   }
 

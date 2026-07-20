@@ -41,6 +41,19 @@ export async function PATCH(request: Request, { params }: Params) {
   });
 
   if (payload.status === "SERVED") {
+    if (order.orderType === "DELIVERY") {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { deliveryStatus: "DELIVERED" },
+      });
+
+      return NextResponse.json(order);
+    }
+
+    if (!order.tableId || !order.table) {
+      return NextResponse.json(order);
+    }
+
     const activeCount = await prisma.order.count({
       where: {
         tableId: order.tableId,
