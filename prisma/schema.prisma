@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Department {
+  KITCHEN
+  BAR
+}
+
+enum TableStatus {
+  FREE
+  BUSY
+  RESERVED
+  CLEANING
+}
+
+enum OrderStatus {
+  NEW
+  IN_PROGRESS
+  READY
+  SERVED
+  CANCELED
+}
+
+enum ItemStatus {
+  NEW
+  COOKING
+  READY
+}
+
+enum StaffRole {
+  ADMIN
+  WAITER
+  KITCHEN
+  BAR
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+enum WaiterNotificationType {
+  WAITER_CALL
+  ORDER_READY
+  TABLE_CLEANING
+}
+
+model StaffUser {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  name         String
+  passwordHash String
+  role         StaffRole
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  assignedTables DiningTable[] @relation("AssignedWaiter")
+  waiterNotifications WaiterNotification[]
+  openedShifts WorkShift[]
+  closedOrders Order[] @relation("ClosedByWaiter")
+  customerReviews CustomerReview[]
+}
+
+model DiningTable {
+  id        String      @id @default(cuid())
+  number    Int         @unique
+  qrToken   String      @unique @default(uuid())
+  seats     Int         @default(4)
+  status    TableStatus @default(FREE)
+  waiterId  String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  waiter    StaffUser?   @relation("AssignedWaiter", fields: [waiterId], references: [id], onDelete: SetNull)
+  orders    Order[]
+  reviews   CustomerReview[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  description String      @default("")
+  price       Int
+  imageUrl    String      @default("")
+  department  Department
+  isPaused    Boolean     @default(false)
+  isDeleted   Boolean     @default(false)
+  categoryId  String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  items       OrderItem[]
+}
+
+model Order {
+  id        String       @id @default(cuid())
+  number    Int          @unique @default(autoincrement())
+  comment   String       @default("")
+  status    OrderStatus  @default(NEW)
+  totalAmount Int        @default(0)
+  paymentMethod PaymentMethod?
+  waiterPercent Float     @default(0)
+  waiterAmount  Int       @default(0)
+  tableId   String
+  shiftId   String?
+  closedAt  DateTime?
+  closedById String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  table     DiningTable  @relation(fields: [tableId], references: [id])
+  shift     WorkShift?   @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+  closedBy  StaffUser?   @relation("ClosedByWaiter", fields: [closedById], references: [id], onDelete: SetNull)
+  items     OrderItem[]
+  review    CustomerReview?
+}
+
+model OrderItem {
+  id        String     @id @default(cuid())
+  quantity  Int
+  price     Int
+  status    ItemStatus @default(NEW)
+  orderId   String
+  productId String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  order     Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product    @relation(fields: [productId], references: [id])
+}
+
+model WaiterNotification {
+  id          String                 @id @default(cuid())
+  type        WaiterNotificationType
+  tableNumber Int
+  title       String
+  message     String
+  waiterId    String?
+  readAt      DateTime?
+  createdAt   DateTime               @default(now())
+  waiter      StaffUser?              @relation(fields: [waiterId], references: [id], onDelete: Cascade)
+}
+
+model DepartmentNotification {
+  id         String     @id @default(cuid())
+  department Department
+  orderId    String?
+  tableNumber Int
+  title      String
+  message    String
+  readAt     DateTime?
+  createdAt  DateTime   @default(now())
+}
+
+model RestaurantSettings {
+  id             String   @id @default("main")
+  waiterPercent  Float    @default(0)
+  cleanupMinutes Int      @default(5)
+  updatedAt      DateTime @updatedAt
+}
+
+model WorkShift {
+  id             String    @id @default(cuid())
+  adminId        String
+  openedAt       DateTime  @default(now())
+  closedAt       DateTime?
+  openingCash    Json
+  closingCash    Json?
+  openingTotal   Int       @default(0)
+  closingTotal   Int?
+  note           String    @default("")
+  admin          StaffUser @relation(fields: [adminId], references: [id])
+  orders         Order[]
+}
+
+model CustomerReview {
+  id        String      @id @default(cuid())
+  rating    Int
+  comment   String      @default("")
+  orderId   String      @unique
+  tableId   String
+  waiterId  String?
+  createdAt DateTime    @default(now())
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  table     DiningTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  waiter    StaffUser?  @relation(fields: [waiterId], references: [id], onDelete: SetNull)
+}

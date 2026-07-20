@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TableFlow
 
-## Getting Started
+MVP для кафе и ресторанов: QR-меню для гостей, админка товаров и столиков, панели кухни/бара, экран официантов и Telegram-уведомления.
 
-First, run the development server:
+## Запуск локально
 
 ```bash
+npm install
+npm run db:generate
+npm run db:migrate
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Приложение откроется на `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## PostgreSQL
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Создай базу:
 
-## Learn More
+```bash
+createdb cafe_menu
+```
 
-To learn more about Next.js, take a look at the following resources:
+И проверь `.env`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cafe_menu?schema=public"
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Telegram
 
-## Deploy on Vercel
+В `.env` заполни:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+NEXT_PUBLIC_APP_URL="https://your-domain.ru"
+TELEGRAM_BOT_TOKEN="токен_бота"
+TELEGRAM_WAITER_CHAT_ID="-100id_группы"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Если переменные пустые, уведомления не отправляются в Telegram, а пишутся в консоль сервера.
+
+`NEXT_PUBLIC_APP_URL` нужен для QR-кодов. Например, QR столика 7 будет вести на `https://your-domain.ru/menu/7`.
+
+## Экраны
+
+- `/admin` - товары, категории, стоп-лист, столики.
+- `/menu/1` - QR-меню для столика 1. Для каждого столика используется свой номер: `/menu/2`, `/menu/3` и так далее.
+- `/api/qr/table/1` - PNG QR-код для столика 1.
+- `/kitchen` - панель кухни.
+- `/bar` - панель бара.
+- `/waiters` - панель официантов и статусы столиков.
